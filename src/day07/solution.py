@@ -1,14 +1,5 @@
-# isort --profile black . && black .
-# python .\src\day07\solution.py
-# watchexec -- "cls && python .\src\day07\solution.py"
-
-import os
 import re
-import statistics
-import time
-from enum import Enum
 from pathlib import Path
-from pprint import pp
 
 from aocd import submit
 
@@ -29,17 +20,35 @@ def calc_dir(data):
 def dir_sizes(data):
     dirs = {}
 
+    working_path = []
+
     for i, line in enumerate(data):
+        line_dir = re.findall(r"^\$ cd ([^.]*)", line)
+
         if "cd .." in line:
-            continue
-        if "cd " in line:
-            folder_name = re.findall(r"^\$ cd ([^.])", line)[0]
+            working_path.pop()
+        elif line_dir:
+            working_path.append(line_dir[0])
             for j, line in enumerate(data[i + 1 :]):
                 if "cd " in line or i + j + 2 == len(data):
-                    dirs[folder_name] = calc_dir(data[i : i + j + 2])
+                    dirs["".join(working_path)] = calc_dir(data[i : i + j + 2])
                     break
 
     return dirs
+
+
+def dir_fullsize(dirs):
+    recursive_dir_sizes = {}
+
+    for key in dirs.keys():
+        recursive_dir_sizes[key] = dirs[key]
+
+    for key in dirs.keys():
+        subdirs = [x for x in dirs.keys() if x.startswith(key) and x is not key]
+        for dir in subdirs:
+            recursive_dir_sizes[key] += dirs[dir]
+
+    return recursive_dir_sizes
 
 
 def dir_tree(data):
@@ -47,7 +56,7 @@ def dir_tree(data):
     working_path = []
 
     for line in data:
-        line_dir = re.findall(r"^\$ cd ([^.])", line)
+        line_dir = re.findall(r"^\$ cd ([^.]*)", line)
 
         if "cd .." in line:
             working_path.pop()
@@ -58,64 +67,39 @@ def dir_tree(data):
     return paths
 
 
-# - /
-#   - a
-#     - e
-#   - d
-
-# [['/'], ['/', 'a'], ['/', 'a', 'e'], ['/', 'd']]
-
-# Solution useless, assumes unique folder/file names
-
 def part1(data):
     dirs = dir_sizes(data)
     paths = dir_tree(data)
+    recursive_sizes = dir_fullsize(dirs)
 
-    print(dirs)
-    print(paths)
+    result = 0
 
-    totals = {}
+    for k, v in recursive_sizes.items():
+        if v <= 100_000:
+            result += recursive_sizes[k]
 
-    for dir in dirs.keys():
-        totals[dir] = 0
-
-
-    # >:(
-
-
-    # for dir in "/": #dirs.keys():
-    #     full_path = []
-
-    #     for path in paths:
-    #         if path[-1] == dir:
-    #             full_path = path
-    #             break
-
-    #     for current_dir in full_path:
-    #         totals[dir] += dirs[current_dir]
-
-    # print(totals)
-
-    # for path in paths:
-    #     for dir in path:
-    #         totals[dir] += dirs[dir]
-
-    # for path in paths:
-    #     running_sum = 0
-    #     for x in path:
-    #         running_sum += dirs[x]
-    #     print(running_sum)
-
-    print(totals)
-
-    return None
+    return result
 
 
 ################################################################################
 
 
 def part2(data):
-    return None
+    disk_size = 70000000
+    free_space_required = 30000000
+
+    dirs = dir_sizes(data)
+    recursive_sizes = dir_fullsize(dirs)
+
+    disk_usage = sum(dirs.values())
+    unused = disk_size - disk_usage
+    to_delete = free_space_required - unused
+
+    eligable_deletions = {v for v in recursive_sizes.values() if v >= to_delete}
+
+    result = min(eligable_deletions)
+
+    return result
 
 
 ################################################################################
@@ -123,25 +107,12 @@ def part2(data):
 
 def parse(path):
     data = Path(path).read_text().splitlines()
-
-    # data = [[int(n) for n in line] for line in data]
-    # data = [int(n) for n in data]
-    # data = [line.split(" ") for line in data]
-    # data = [line.split("-") for line in data]
-    # data = [line.split(",") for line in data]
-    # data = [line.split(",") for line in data][0]
-    # data = [line.strip("\n") for line in data]
-    # data = [line[:-1] for line in data]
-    # data = [re.sub(r" -> ", r",", line) for line in data]
-    # data = [re.sub(r" \| ", r" ", line) for line in data]
-    # data = data[0]
-
     return data
 
 
 def auto_submitter():
     example_part1 = 95437
-    example_part2 = False
+    example_part2 = 24933642
 
     if example_part1 == part1(parse("src/day07/example.txt")):
         print(f"PART 1 EXAMPLE PASS ({example_part1}), SUBMITTING")

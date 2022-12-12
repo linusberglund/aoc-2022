@@ -20,7 +20,7 @@ def debug(chart, visited):
     for y in range(len(visited_chart)):
         for x in range(len(visited_chart[0])):
             if (x, y) in visited:
-                visited_chart[y][x] = "#"
+                visited_chart[y][x] = chart[y][x]
 
     for y in visited_chart:
         print("".join(y))
@@ -46,6 +46,7 @@ def dijkstra(graph, chart, start):
 
         for v in Q:
             if dist[v] < min_dist:
+                min_dist = dist[v]
                 u = v
 
         if u is None:
@@ -85,8 +86,7 @@ def dijkstra(graph, chart, start):
     return dist, prev
 
 
-def part1(data):
-
+def get_graph_start_goal(data):
     graph = set()
     start = None
     goal = None
@@ -99,8 +99,10 @@ def part1(data):
             if data[y][x] == "E":
                 goal = (x, y)
 
-    dist, prev = dijkstra(graph, data, start)
+    return graph, start, goal
 
+
+def get_path(prev, start, goal):
     path = []
     current = goal
 
@@ -110,14 +112,53 @@ def part1(data):
         path.append(current)
         current = prev[current]
 
-    # debug(data, path)
+    return path
+
+
+def part1(data):
+    graph, start, goal = get_graph_start_goal(data)
+    dist, prev = dijkstra(graph, data, start)
+
+    path = get_path(prev, start, goal)
     return len(path)
 
 
 ################################################################################
 
 
+def get_candidates(data):
+    candidates = []
+
+    for y in range(len(data)):
+        for x in range(len(data[0])):
+            if data[y][x] in ["a", "S"]:
+                candidates.append((x, y))
+
+    return candidates
+
+
 def part2(data):
+    graph, start, goal = get_graph_start_goal(data)
+    candidates = get_candidates(data)
+
+    # import time
+
+    # before = time.perf_counter_ns()
+
+    # for c in candidates[1:2]:
+    #     during = time.perf_counter_ns()
+
+    #     dist, prev = dijkstra(graph, data, c)
+    #     path = get_path(prev, start, goal)
+
+    #     print(
+    #         f"Candidate: {c}, len: {len(path)}, Time: {(time.perf_counter_ns() - during)/1000000000} sec"
+    #     )
+
+    # print(f"Total time: {(time.perf_counter_ns() - before)/1000000000} sec")
+
+    # path = get_path(prev, start, goal)
+    # return len(path)
     return None
 
 
@@ -149,4 +190,4 @@ data = "src/day12/example.txt"
 print(part1(parse(data)))
 print(part2(parse(data)))
 
-auto_submitter()
+# auto_submitter()

@@ -1,10 +1,5 @@
-# isort --profile black . && black .
-# python .\src\day12\solution.py
-# watchexec -- "cls && python .\src\day12\solution.py"
-
 import sys
 from pathlib import Path
-from pprint import pp
 
 from aocd import submit
 
@@ -111,7 +106,6 @@ def get_path(prev, start, goal):
             break
         path.append(current)
         current = prev[current]
-
     return path
 
 
@@ -137,29 +131,27 @@ def get_candidates(data):
     return candidates
 
 
+# Around 1 min runtime. TODO: Reverse Dijkstra from goal to start(s)
 def part2(data):
     graph, start, goal = get_graph_start_goal(data)
     candidates = get_candidates(data)
+    candidates = [(x, y) for (x, y) in candidates if x == 0]
 
-    # import time
+    result = {}
 
-    # before = time.perf_counter_ns()
+    for c in candidates:
+        dist, prev = dijkstra(graph, data, c)
+        path = get_path(prev, c, goal)
 
-    # for c in candidates[1:2]:
-    #     during = time.perf_counter_ns()
+        result[c] = path
 
-    #     dist, prev = dijkstra(graph, data, c)
-    #     path = get_path(prev, start, goal)
+    shortest = sys.maxsize
 
-    #     print(
-    #         f"Candidate: {c}, len: {len(path)}, Time: {(time.perf_counter_ns() - during)/1000000000} sec"
-    #     )
+    for v in result.values():
+        if len(v) < shortest:
+            shortest = len(v)
 
-    # print(f"Total time: {(time.perf_counter_ns() - before)/1000000000} sec")
-
-    # path = get_path(prev, start, goal)
-    # return len(path)
-    return None
+    return shortest
 
 
 ################################################################################
@@ -173,7 +165,7 @@ def parse(path):
 
 def auto_submitter():
     example_part1 = 31
-    example_part2 = False
+    example_part2 = 29
 
     if example_part1 == part1(parse("src/day12/example.txt")):
         print(f"PART 1 EXAMPLE PASS ({example_part1}), SUBMITTING")
@@ -190,4 +182,4 @@ data = "src/day12/example.txt"
 print(part1(parse(data)))
 print(part2(parse(data)))
 
-# auto_submitter()
+auto_submitter()

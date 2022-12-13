@@ -22,26 +22,46 @@ def pad_list(left, right):
 
 
 def compare(p1, p2):
-    print(p1)
-    print(p2)
-    p1, p2 = pad_list(p1, p2)
-    print(p1)
-    print(p2)
+    if p1 is None:
+        return True
+    if p2 is None:
+        return False
 
-    for left, right in zip(p1, p2):
+    if type(p1) is type(0) and type(p2) is type(0) and p1 == p2:
+        return None
+    if type(p1) is type(0) and type(p2) is type(0) and p1 < p2:
+        return True
+    if type(p1) is type(0) and type(p2) is type(0) and p1 > p2:
+        return False
+
+    if type(p1) is not type([]):
+        p1 = [p1]
+
+    if type(p2) is not type([]):
+        p2 = [p2]
+
+    if type(p1) is type([]) and type(p2) is type([]):
+        p1, p2 = pad_list(p1, p2)
+    big_zip = zip(p1, p2, strict=True)
+
+    for left, right in big_zip:
+
         if type(left) is type(0) and type(right) is type(0):
+            if left == right:
+                continue
             if left < right:
                 return True
             if left > right:
                 return False
-            if left == right:
-                continue
 
         if type(left) is type([]) and type(right) is type([]):
-            print("ALREADY")
             left, right = pad_list(left, right)
-            for x, y in zip(left, right):
-                pass
+            small_zip = zip(left, right, strict=True)
+
+            for x, y in small_zip:
+                result = compare(x, y)
+                if result is not None:
+                    return result
 
         if type(left) is type(0):
             left = [left]
@@ -49,30 +69,25 @@ def compare(p1, p2):
         if type(right) is type(0):
             right = [right]
 
-        return compare(left, right)
+        result = compare(left, right)
+        if result is not None:
+            return result
 
-    return False
+    return None
 
 
 def part1(data):
-    # a = [0]
-    # b = [1, 2]
-    # a, b = pad_list(a, b)
-    # for x in zip(a, b, strict=True):
-    #     print(x)
-
-    result = 0
     pairs = []
 
     for i in range(0, len(data), 3):
         pairs.append((eval(data[i]), eval(data[i + 1])))
 
+    result = 0
+
     for i, (left, right) in enumerate(pairs):
         if compare(left, right):
             result += i + 1
-        print("RES:", result)
 
-    print()
     return result
 
 

@@ -1,9 +1,4 @@
-# isort --profile black . && black .
-# python .\src\day13\solution.py
-# watchexec -- "cls && python .\src\day13\solution.py"
-
 from pathlib import Path
-from pprint import pp
 
 from aocd import submit
 
@@ -95,7 +90,25 @@ def part1(data):
 
 
 def part2(data):
-    return None
+    packets = [x for x in data if x != ""]
+
+    divider_packet_1 = "[[2]]"
+    divider_packet_2 = "[[6]]"
+
+    packets.append(divider_packet_1)
+    packets.append(divider_packet_2)
+
+    for i in range(1, len(packets)):
+        for j in range(i - 1, -1, -1):
+            if not compare(eval(packets[j]), eval(packets[j + 1])):
+                packets[j], packets[j + 1] = packets[j + 1], packets[j]
+
+    divider_packet_1_index = packets.index(divider_packet_1) + 1
+    divider_packet_2_index = packets.index(divider_packet_2) + 1
+
+    decoder_key = divider_packet_1_index * divider_packet_2_index
+
+    return decoder_key
 
 
 ################################################################################
@@ -108,15 +121,15 @@ def parse(path):
 
 def auto_submitter():
     example_part1 = 13
-    example_part2 = False
+    example_part2 = 140
 
     if example_part1 == part1(parse("src/day13/example.txt")):
         print(f"PART 1 EXAMPLE PASS ({example_part1}), SUBMITTING")
         submit(part1(parse("src/day13/input.txt")), part="a", day=13, year=2022)
 
-    if example_part2 == part2(parse("src/day13/example.txt")):
-        print(f"PART 2 EXAMPLE PASS ({example_part2}), SUBMITTING")
-        submit(part2(parse("src/day13/input.txt")), part="b", day=13, year=2022)
+        if example_part2 == part2(parse("src/day13/example.txt")):
+            print(f"PART 2 EXAMPLE PASS ({example_part2}), SUBMITTING")
+            submit(part2(parse("src/day13/input.txt")), part="b", day=13, year=2022)
 
 
 data = "src/day13/example.txt"
@@ -124,4 +137,4 @@ data = "src/day13/example.txt"
 print(part1(parse(data)))
 print(part2(parse(data)))
 
-# auto_submitter()
+auto_submitter()
